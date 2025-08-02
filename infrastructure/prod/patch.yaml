@@ -1,21 +1,22 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: pulumi-operator
   namespace: pulumi
 spec:
-  values:
-    operator:
-      logLevel: warn  # Minimal logging for production
-      # Full resources for production environment
-      resources:
-        limits:
-          cpu: 1000m
-          memory: 1Gi
-        requests:
-          cpu: 200m
-          memory: 256Mi
-    # Enable monitoring in production
-    serviceMonitor:
-      enabled: true
+  template:
+    spec:
+      containers:
+        - name: manager
+          # Full resources for production environment
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 200m
+              memory: 256Mi
+          env:
+            - name: PULUMI_LOG_LEVEL
+              value: "warn"  # Minimal logging for production

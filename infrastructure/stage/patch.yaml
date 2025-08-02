@@ -8,15 +8,15 @@ spec:
   template:
     spec:
       containers:
-      - name: manager
-        # Moderate resources for staging environment
-        resources:
-          limits:
-            cpu: 400m
-            memory: 400Mi
-          requests:
-            cpu: 75m
-            memory: 96Mi
-        env:
-        - name: PULUMI_LOG_LEVEL
-          value: "info"  # Less verbose logging for staging
+        - name: manager
+          # Moderate resources for staging environment
+          resources:
+            limits:
+              cpu: 400m
+              memory: 400Mi
+            requests:
+              cpu: 75m
+              memory: 96Mi
+          env:
+            - name: PULUMI_LOG_LEVEL
+              value: "info"  # Less verbose logging for staging
