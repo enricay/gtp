@@ -125,12 +125,20 @@ rules:
     resources:
       - stacks
       - programs
+      - stacks/status
+      - programs/status
+      - stacks/finalizers
+      - programs/finalizers
     verbs: ["*"]
   
   - apiGroups: ["auto.pulumi.com"]
     resources:
       - updates
       - workspaces
+      - updates/status
+      - workspaces/status
+      - updates/finalizers
+      - workspaces/finalizers
     verbs: ["*"]
 
   - apiGroups: ["rbac.authorization.k8s.io"]
