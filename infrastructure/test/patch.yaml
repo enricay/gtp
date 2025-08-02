@@ -1,0 +1,21 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: pulumi-operator
+  namespace: pulumi
+spec:
+  values:
+    operator:
+      logLevel: debug
+      # Lower resource requirements for test environment
+      resources:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+    # Enable monitoring in test for validation
+    serviceMonitor:
+      enabled: true

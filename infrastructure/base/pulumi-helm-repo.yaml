@@ -1,0 +1,9 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: pulumi
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://pulumi.github.io/pulumi-kubernetes-operator

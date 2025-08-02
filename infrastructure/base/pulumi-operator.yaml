@@ -1,0 +1,58 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: pulumi-operator
+  namespace: pulumi
+spec:
+  releaseName: pulumi-operator
+  interval: 5m
+  chart:
+    spec:
+      chart: pulumi-kubernetes-operator
+      version: "1.15.0"  # Updated to latest stable version
+      sourceRef:
+        kind: HelmRepository
+        name: pulumi
+        namespace: flux-system
+      interval: 1m
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    image:
+      tag: "v1.15.0"
+    operator:
+      # Resource limits and requests
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      # Log level (can be overridden per environment)
+      logLevel: info
+      # Pulumi access token from secret
+      pulumiAccessToken:
+        valueFrom:
+          secretKeyRef:
+            name: pulumi-access-token
+            key: PULUMI_ACCESS_TOKEN
+    # RBAC configuration
+    rbac:
+      create: true
+    serviceAccount:
+      create: true
+      name: pulumi-operator
+    # ServiceMonitor for Prometheus monitoring
+    serviceMonitor:
+      enabled: false
+    # Node selector for specific nodes (if needed)
+    nodeSelector: {}
+    # Tolerations for tainted nodes (if needed)
+    tolerations: []
