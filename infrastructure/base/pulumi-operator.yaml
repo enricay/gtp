@@ -1,58 +1,151 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pulumi
+  labels:
+    app.kubernetes.io/name: pulumi-operator
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: programs.pulumi.com
+spec:
+  group: pulumi.com
+  names:
+    kind: Program
+    listKind: ProgramList
+    plural: programs
+    singular: program
+  scope: Namespaced
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: updates.auto.pulumi.com
+spec:
+  group: auto.pulumi.com
+  names:
+    kind: Update
+    listKind: UpdateList
+    plural: updates
+    singular: update
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+---
+apiVersion: v1
+kind: ServiceAccount
 metadata:
   name: pulumi-operator
   namespace: pulumi
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pulumi-operator-manager
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - pulumi.com
+  resources:
+  - programs
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - auto.pulumi.com
+  resources:
+  - updates
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pulumi-operator-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pulumi-operator-manager
+subjects:
+- kind: ServiceAccount
+  name: pulumi-operator
+  namespace: pulumi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pulumi-operator
+  namespace: pulumi
+  labels:
+    app.kubernetes.io/name: pulumi-operator
 spec:
-  releaseName: pulumi-operator
-  interval: 5m
-  chart:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pulumi-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pulumi-operator
     spec:
-      chart: pulumi-kubernetes-operator
-      version: "1.15.0"  # Updated to latest stable version
-      sourceRef:
-        kind: HelmRepository
-        name: pulumi
-        namespace: flux-system
-      interval: 1m
-  install:
-    createNamespace: true
-    remediation:
-      retries: 3
-  upgrade:
-    remediation:
-      retries: 3
-  values:
-    image:
-      tag: "v1.15.0"
-    operator:
-      # Resource limits and requests
-      resources:
-        limits:
-          cpu: 500m
-          memory: 512Mi
-        requests:
-          cpu: 100m
-          memory: 128Mi
-      # Log level (can be overridden per environment)
-      logLevel: info
-      # Pulumi access token from secret
-      pulumiAccessToken:
-        valueFrom:
-          secretKeyRef:
-            name: pulumi-access-token
-            key: PULUMI_ACCESS_TOKEN
-    # RBAC configuration
-    rbac:
-      create: true
-    serviceAccount:
-      create: true
-      name: pulumi-operator
-    # ServiceMonitor for Prometheus monitoring
-    serviceMonitor:
-      enabled: false
-    # Node selector for specific nodes (if needed)
-    nodeSelector: {}
-    # Tolerations for tainted nodes (if needed)
-    tolerations: []
+      serviceAccountName: pulumi-operator
+      containers:
+      - name: manager
+        image: pulumi/pulumi-kubernetes-operator:v2.1.0
+        args:
+        - "/manager"
+        - "--leader-elect"
+        env:
+        - name: PULUMI_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: pulumi-access-token
+              key: PULUMI_ACCESS_TOKEN
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+      securityContext:
+        runAsNonRoot: true

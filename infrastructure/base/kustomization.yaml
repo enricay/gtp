@@ -1,5 +1,3 @@
 ---
 resources:
-  - pulumi-helm-repo.yaml
   - pulumi-secret.yaml
-  - pulumi-operator.yaml
