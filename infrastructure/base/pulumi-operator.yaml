@@ -28918,7 +28918,7 @@ spec:
       serviceAccountName: pulumi-operator
       containers:
       - name: manager
-        image: pulumi/pulumi:3.187.0-nonroot
+        image: pulumi/pulumi-kubernetes-operator:v2.1.0
         args:
         - "/manager"
         - "--leader-elect"
@@ -28928,6 +28928,8 @@ spec:
             secretKeyRef:
               name: pulumi-access-token
               key: PULUMI_ACCESS_TOKEN
+        - name: PULUMI_IMAGE
+          value: "pulumi/pulumi:3.187.0-nonroot"
         resources:
           limits:
             cpu: 500m
