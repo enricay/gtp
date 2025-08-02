@@ -1,21 +1,22 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: pulumi-operator
   namespace: pulumi
 spec:
-  values:
-    operator:
-      logLevel: info  # Less verbose logging for staging
-      # Moderate resources for staging environment
-      resources:
-        limits:
-          cpu: 400m
-          memory: 400Mi
-        requests:
-          cpu: 75m
-          memory: 96Mi
-    # Enable monitoring in staging
-    serviceMonitor:
-      enabled: true
+  template:
+    spec:
+      containers:
+      - name: manager
+        # Moderate resources for staging environment
+        resources:
+          limits:
+            cpu: 400m
+            memory: 400Mi
+          requests:
+            cpu: 75m
+            memory: 96Mi
+        env:
+        - name: PULUMI_LOG_LEVEL
+          value: "info"  # Less verbose logging for staging

@@ -4,5 +4,5 @@ resources:
 patches:
   - path: patch.yaml
     target:
-      kind: HelmRelease
+      kind: Deployment
       name: pulumi-operator

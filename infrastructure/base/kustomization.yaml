@@ -1,3 +1,4 @@
 ---
 resources:
+  - pulumi-operator.yaml
   - pulumi-secret.yaml
