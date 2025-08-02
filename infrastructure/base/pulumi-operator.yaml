@@ -28918,7 +28918,7 @@ spec:
       serviceAccountName: pulumi-operator
       containers:
       - name: manager
-        image: pulumi/pulumi-kubernetes-operator:v2.1.0
+        image: pulumi/pulumi:3.187.0-nonroot
         args:
         - "/manager"
         - "--leader-elect"
